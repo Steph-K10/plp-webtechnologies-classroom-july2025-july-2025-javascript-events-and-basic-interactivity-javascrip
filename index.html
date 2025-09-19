@@ -1,0 +1,281 @@
+<!-- Week 6 Assignment: developing an interactive page with JS. Designing simple a bakery themed website for Jonte fresh -->
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweet Delights Bakery</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Jonte Fresh's Sweet Delights Bakery</h1>
+            <p>Where every treat is made with love</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#interactive">Interactive Features</a></li>
+                <li><a href="#order">Place Order</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Part 1: Event Handling -->
+        <section id="interactive">
+            <h2>Event Handling Demonstrations</h2>
+            
+            <div class="event-demo">
+                <h3>Click Event</h3>
+                <p>Click the button to reveal a special message:</p>
+                <button id="reveal-btn">Click Me!</button>
+                <p id="secret-message" class="hidden">You've discovered our secret recipe: Love is the main ingredient!</p>
+            </div>
+            
+            <div class="event-demo">
+                <h3>Mouse Events</h3>
+                <p>Hover over the cupcake to see it glow, and click to add sprinkles:</p>
+                <div id="cupcake" class="cupcake">🧁</div>
+                <p id="cupcake-status">Cupcake is ready for interaction</p>
+            </div>
+            
+            <div class="event-demo">
+                <h3>Keyboard Events</h3>
+                <p>Type in the input below to see your text transformed:</p>
+                <input type="text" id="keyboard-input" placeholder="Start typing here...">
+                <p id="keyboard-output">Your text will appear here</p>
+            </div>
+        </section>
+
+        <!-- Part 2: Interactive Elements -->
+        <section id="interactive-elements">
+            <h2>Interactive Bakery Features</h2>
+            
+            <!-- Feature 1: Light/Dark Mode Toggle -->
+            <div class="feature">
+                <h3>Bakery Mode Toggle</h3>
+                <p>Switch between day and night bakery modes:</p>
+                <button id="theme-toggle">Switch to Dark Mode</button>
+            </div>
+            
+            <!-- Feature 2: Simple Cookie Counter Game -->
+            <!-- Isolated Cookie Game - Will NOT conflict with other page elements -->
+            <!-- Timer Cookie Game with Modal -->
+            <div style="border: 2px solid #d2691e; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; background: #fffaf0;">
+                <h3 style="color: #8b4513; margin-top: 0;">Cookie Clicker Game</h3>
+                <p>Click "Start Game" then bake as many cookies as you can in 10 seconds by clicking the button below!</p>
+                
+                <button id="timer-cookie-btn" 
+                        style="background-color: #d2691e; color: white; border: none; padding: 20px 40px; font-size: 20px; border-radius: 60px; cursor: pointer; margin: 15px; display: inline-block !important;">
+                    🍪Click to Bake Cookies!🍪
+                </button>
+                
+                <div style="display: flex; justify-content: center; gap: 30px; margin: 15px 0;">
+                    <div>
+                        <p>Cookies: <span id="timer-cookie-count" style="font-weight: bold; color: #d2691e; font-size: 24px;">0</span></p>
+                    </div>
+                    <div>
+                        <p>Time: <span id="game-timer" style="font-weight: bold; color: #d2691e; font-size: 24px;">10</span>s</p>
+                    </div>
+                </div>
+                
+                <button id="start-timer-btn" 
+                        style="background-color: #8b4513; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                    Start Game
+                </button>
+            </div>
+
+            <!-- Results Modal (hidden initially) -->
+            <div id="results-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+                <div style="background: white; padding: 30px; border-radius: 15px; text-align: center; max-width: 400px;">
+                    <h2 style="color: #8b4513;">Time's Up! ⏰</h2>
+                    <p>You baked <span id="final-score" style="font-weight: bold; color: #d2691e; font-size: 24px;">0</span> cookies!</p>
+                    <p id="score-message" style="font-style: italic; margin: 15px 0;"></p>
+                    <button onclick="document.getElementById('results-modal').style.display='none'" 
+                            style="background-color: #d2691e; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                        Play Again
+                    </button>
+                </div>
+            </div>
+
+            <script>
+            // Timer-based cookie game
+            document.addEventListener('DOMContentLoaded', function() {
+                const cookieBtn = document.getElementById('timer-cookie-btn');
+                const cookieCount = document.getElementById('timer-cookie-count');
+                const gameTimer = document.getElementById('game-timer');
+                const startBtn = document.getElementById('start-timer-btn');
+                const resultsModal = document.getElementById('results-modal');
+                const finalScore = document.getElementById('final-score');
+                const scoreMessage = document.getElementById('score-message');
+                
+                let count = 0;
+                let timeLeft = 10;
+                let gameActive = false;
+                let timerInterval;
+                
+                // Initialize game state
+                cookieBtn.disabled = true;
+                
+                startBtn.addEventListener('click', function() {
+                    // Reset game
+                    count = 0;
+                    timeLeft = 10;
+                    cookieCount.textContent = '0';
+                    gameTimer.textContent = '10';
+                    gameActive = true;
+                    
+                    // Enable cookie button
+                    cookieBtn.disabled = false;
+                    startBtn.textContent = 'Game Running...';
+                    startBtn.disabled = true;
+                    
+                    // Start timer
+                    clearInterval(timerInterval);
+                    timerInterval = setInterval(function() {
+                        timeLeft--;
+                        gameTimer.textContent = timeLeft;
+                        
+                        // Change color when time is running out
+                        if (timeLeft <= 5) {
+                            gameTimer.style.color = 'red';
+                        }
+                        
+                        if (timeLeft <= 0) {
+                            endGame();
+                        }
+                    }, 1000);
+                });
+                
+                cookieBtn.addEventListener('click', function() {
+                    if (gameActive) {
+                        count++;
+                        cookieCount.textContent = count;
+                        
+                        // Visual feedback
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            this.style.transform = 'scale(1)';
+                        }, 100);
+                    }
+                });
+                
+                function endGame() {
+                    clearInterval(timerInterval);
+                    gameActive = false;
+                    cookieBtn.disabled = true;
+                    
+                    // Show results modal
+                    finalScore.textContent = count;
+                    
+                    // Set message based on score
+                    if (count === 0) {
+                        scoreMessage.textContent = "You need to click the button!";
+                    } else if (count < 10) {
+                        scoreMessage.textContent = "Keep practicing!";
+                    } else if (count < 20) {
+                        scoreMessage.textContent = "Good job!";
+                    } else if (count < 30) {
+                        scoreMessage.textContent = "Great clicking!";
+                    } else {
+                        scoreMessage.textContent = "Amazing! You're a cookie master!";
+                    }
+                    
+                    resultsModal.style.display = 'flex';
+                    
+                    // Reset start button
+                    startBtn.textContent = 'Start Game';
+                    startBtn.disabled = false;
+                    gameTimer.style.color = '#d2691e';
+                }
+                
+                // Force elements to stay visible
+                setInterval(() => {
+                    cookieBtn.style.display = 'inline-block';
+                    cookieBtn.style.visibility = 'visible';
+                }, 100);
+            });
+            </script>
+            
+            <!-- Feature 3: Collapsible FAQ Section -->
+            <div class="feature" id="faq">
+                <h3>Bakery FAQ</h3>
+                <p>Click on a question to reveal the answer:</p>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Do you offer gluten-free options? ➕</div>
+                    <div class="faq-answer">Yes! We have a variety of gluten-free pastries available daily.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">How far in advance should I place a custom order? ➕</div>
+                    <div class="faq-answer">We recommend placing custom orders at least 48 hours in advance.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Do you deliver? ➕</div>
+                    <div class="faq-answer">We offer delivery within a 5-mile radius for orders over $25.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 3: Form Validation -->
+        <section id="order">
+            <h2>Place Your Bakery Order</h2>
+            <p>Fill out the form below to place your order. All fields are required.</p>
+            
+            <form id="order-form">
+                <div class="form-group">
+                    <label for="name">Full Name:</label>
+                    <input type="text" id="name" placeholder="Enter your full name">
+                    <div class="error-message" id="name-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                    <div class="error-message" id="email-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" placeholder="Enter your phone number">
+                    <div class="error-message" id="phone-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="order-details">Order Details:</label>
+                    <textarea id="order-details" placeholder="Describe what you'd like to order"></textarea>
+                    <div class="error-message" id="order-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Preferred Pickup Date:</label>
+                    <input type="date" id="date">
+                    <div class="error-message" id="date-error"></div>
+                </div>
+                
+                <button type="submit" id="submit-btn">Place Order</button>
+            </form>
+            
+            <div id="order-success" class="hidden">
+                <h3>Thank you for your order!</h3>
+                <p>We've received your request and will contact you shortly to confirm details.</p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Jonte's Sweet Delights Bakery. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="./script.js"></script>
+</body>
+</html>
